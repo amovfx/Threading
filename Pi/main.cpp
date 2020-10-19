@@ -50,7 +50,7 @@ int main() {
     //packaged_task<double(int,int)> task(bind(calculate_pi, 0, 1E6));
     //future<double> result = task.get_future();
     promise<double> promise;
-    auto do_work = [&promise](const int& start, const int& end){
+    auto do_work = [&promise](int start, int end){
         double result = calculate_pi(start, end);
         promise.set_value(result);
     };
@@ -58,8 +58,17 @@ int main() {
     thread t1(do_work,0, 1000);
     t1.join();
 
-    future<double> future = promise.get_future();
-    cout << setprecision(16) << future.get()*4 << endl;
+    future<double> future1 = promise.get_future();
+    cout << setprecision(16) << future1.get()*4 << endl;
+
+    packaged_task<double(const int&, const int&)> task1(calculate_pi);
+    future<double> f2 = task1.get_future();
+    thread t2(move(task1), 0, 1E6);
+    double result = f2.get();
+
+    cout << setprecision(16) << result*4 << endl;
+    t2.join();
+
 
 
     //calculate_pi(0, 5);
